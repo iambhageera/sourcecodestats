@@ -1,17 +1,15 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
 
-func requestHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(responseWriter, "Hi there! The URL path is %s!", request.URL.Path)
-}
-
 func main() {
-	log.Println("An application to count lines of a GitHub repository!")
+	log.Println("Initiliazing App..")
+	routeHandleManager := InitializeRouteHandleManager()
+	requestHandler := routeHandleManager.InitializeRouteHandles()
 	http.HandleFunc("/", requestHandler)
+	log.Println("Starting server at port 8080..")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
