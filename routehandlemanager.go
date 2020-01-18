@@ -4,15 +4,16 @@ import (
 	"net/http"
 )
 
-type HttpRouteHandleManager struct {
-	routes []*route
+// HTTPRouteHandleManager - Manages all the routes and their handlers
+type HTTPRouteHandleManager struct {
+	routes []*Route
 }
 
-func (handleManager *HttpRouteHandleManager) UniversalHandler(responseWriter http.ResponseWriter, request *http.Request) {
-	
+// UniversalHandler - A single request handler which will process all the requests for the application
+func (handleManager *HTTPRouteHandleManager) UniversalHandler(responseWriter http.ResponseWriter, request *http.Request) {
+
 	for _, route := range handleManager.routes {
-		if ok := route.urlPattern != nil && route.handler != nil;
-			ok && route.urlPattern.MatchString(request.URL.Path) {
+		if ok := route.urlPattern != nil && route.handler != nil; ok && route.urlPattern.MatchString(request.URL.Path) {
 
 			route.handler.ServeHTTP(responseWriter, request)
 			return
@@ -22,17 +23,19 @@ func (handleManager *HttpRouteHandleManager) UniversalHandler(responseWriter htt
 	http.NotFound(responseWriter, request)
 }
 
-func (handleManager *HttpRouteHandleManager) InitializeRouteHandles() func(responseWriter http.ResponseWriter, request *http.Request) {
+// InitializeRouteHandles - Initializes the handles for all available routes
+func (handleManager *HTTPRouteHandleManager) InitializeRouteHandles() func(responseWriter http.ResponseWriter, request *http.Request) {
 
 	handleManager.routes = append(handleManager.routes, GetGitHubHandler())
-	handleManager.routes = append(handleManager.routes, GetGitLabHandler())	
+	handleManager.routes = append(handleManager.routes, GetGitLabHandler())
 	handleManager.routes = append(handleManager.routes, GetBitBucketHandler())
 
 	return handleManager.UniversalHandler
 }
 
-func InitializeRouteHandleManager() *HttpRouteHandleManager {
-	var routeHandler *HttpRouteHandleManager = new(HttpRouteHandleManager)
-	routeHandler.routes = make([]*route, 0)
+// InitializeRouteHandleManager - Initializes the HttpRouteHandleManager object
+func InitializeRouteHandleManager() *HTTPRouteHandleManager {
+	var routeHandler *HTTPRouteHandleManager = new(HTTPRouteHandleManager)
+	routeHandler.routes = make([]*Route, 0)
 	return routeHandler
 }

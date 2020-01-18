@@ -1,47 +1,60 @@
 package main
 
 import (
-	"html"
 	"fmt"
-	"regexp"
+	"html"
 	"net/http"
+	"regexp"
 )
 
-type route struct {
+// Route - Structure to store details of a route such as URL pattern
+// and it's handler
+type Route struct {
 	urlPattern *regexp.Regexp
-	handler http.Handler
+	handler    http.Handler
 }
 
-type githubHandler struct { }
+type githubHandler struct{}
+
 func (handler githubHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(responseWriter, "Hello from GitHub! %q", html.EscapeString(request.URL.Path))
 }
 
-type gitlabHandler struct { }
+type gitlabHandler struct{}
+
 func (handler gitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(responseWriter, "Hello from GitLab! %q", html.EscapeString(request.URL.Path))
 }
 
-type bitbucketHandler struct { }
+type bitbucketHandler struct{}
+
 func (handler bitbucketHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(responseWriter, "Hello from BitBucket! %q", html.EscapeString(request.URL.Path))
 }
 
-var GitHubUrlPattern = `^/github/([^/]+)/([^/]+)/?$`
-var GitLabUrlPattern = `^/gitlab/([^/]+)/([^/]+)/?$`
-var BitBucketUrlPattern = `^/bitbucket/([^/]+)/([^/]+)/?$`
+// GitHubURLPattern - Regex Pattern for GitHub request URLs
+var GitHubURLPattern = `^/github/([^/]+)/([^/]+)/?$`
 
-func GetGitHubHandler() *route {
-	var githubRegex *regexp.Regexp = regexp.MustCompile(GitHubUrlPattern)
-	return &route{githubRegex, githubHandler{}}
+// GitLabURLPattern - Regex Pattern for GitLab request URLs
+var GitLabURLPattern = `^/gitlab/([^/]+)/([^/]+)/?$`
+
+// BitBucketURLPattern - Regex Pattern for BitBucket request URLs
+var BitBucketURLPattern = `^/bitbucket/([^/]+)/([^/]+)/?$`
+
+// GetGitHubHandler - Gets the route handler for GitHub
+func GetGitHubHandler() *Route {
+	var githubRegex *regexp.Regexp = regexp.MustCompile(GitHubURLPattern)
+	return &Route{githubRegex, githubHandler{}}
 }
 
-func GetGitLabHandler() *route {
-	var gitlabRegex *regexp.Regexp = regexp.MustCompile(GitLabUrlPattern)
-	return &route{gitlabRegex, gitlabHandler{}}
+// GetGitLabHandler - Gets the route handler for GitLab
+func GetGitLabHandler() *Route {
+	var gitlabRegex *regexp.Regexp = regexp.MustCompile(GitLabURLPattern)
+	return &Route{gitlabRegex, gitlabHandler{}}
 }
 
-func GetBitBucketHandler() *route {
-	var bitbucketRegex *regexp.Regexp = regexp.MustCompile(BitBucketUrlPattern)
-	return &route{bitbucketRegex, bitbucketHandler{}}
+// GetBitBucketHandler - Gets the route handler for BitBucket
+func GetBitBucketHandler() *Route {
+	var bitbucketRegex *regexp.Regexp = regexp.MustCompile(BitBucketURLPattern)
+	return &Route{bitbucketRegex, bitbucketHandler{}}
 }
