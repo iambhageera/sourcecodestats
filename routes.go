@@ -31,15 +31,32 @@ type HTTPRouteHandleManager struct {
 // UniversalHandler - A single request handler which will process all the requests for the application
 func (handleManager *HTTPRouteHandleManager) UniversalHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
+	// Make sure that the writer supports flushing
+	if _, ok := responseWriter.(http.Flusher); !ok {
+		http.Error(responseWriter, "Streaming Unsupported!", http.StatusInternalServerError)
+	}
+
+	// Stores the final handler for the request
+	var handler http.Handler
+
 	for _, route := range handleManager.routes {
 		if ok := route.urlPattern != nil && route.handler != nil; ok && route.urlPattern.MatchString(request.URL.Path) {
-
-			route.handler.ServeHTTP(responseWriter, request)
-			return
+			handler = route.handler
+			break
 		}
 	}
 
-	http.NotFound(responseWriter, request)
+	if handler == nil {
+		http.NotFound(responseWriter, request)
+	}
+
+	// Set all the required HTTP headers for handling Server Side Events
+	responseWriter.Header().Set("Content-Type", "text/event-stream")
+	responseWriter.Header().Set("Cache-Control", "no-cache")
+	responseWriter.Header().Set("Connection", "keep-alive")
+	responseWriter.Header().Set("Access-Control-Allow-Origin", "*")
+
+	handler.ServeHTTP(responseWriter, request)
 }
 
 // InitializeRouteHandles - Initializes the handles for all available routes
@@ -59,11 +76,25 @@ func InitializeRouteHandleManager() *HTTPRouteHandleManager {
 	return routeHandler
 }
 
-// GithubHandler - Request handler for GitHub
+// GithubHandler - Request handler type for GitHub
 type GithubHandler struct{}
 
 func (handler GithubHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(responseWriter, "Hello from GitHub! %q", html.EscapeString(request.URL.Path))
+}
+
+// GitlabHandler - Request handler type for GitLab
+type GitlabHandler struct{}
+
+func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	fmt.Fprintf(responseWriter, "Hello from GitLab! %q", html.EscapeString(request.URL.Path))
+}
+
+// BitbucketHandler - Request handler for BitBucket
+type BitbucketHandler struct{}
+
+func (handler BitbucketHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+	fmt.Fprintf(responseWriter, "Hello from BitBucket! %q", html.EscapeString(request.URL.Path))
 }
 
 // GetGitHubHandler - Gets the route handler for GitHub
@@ -72,24 +103,10 @@ func GetGitHubHandler() *Route {
 	return &Route{githubRegex, GithubHandler{}}
 }
 
-// GitlabHandler - Request handler for GitLab
-type GitlabHandler struct{}
-
-func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(responseWriter, "Hello from GitLab! %q", html.EscapeString(request.URL.Path))
-}
-
-// GetGitLabHandler - Gets the route handler for GitLab
+// GetGitLabHandler - Gets the route handler type for GitLab
 func GetGitLabHandler() *Route {
 	var gitlabRegex *regexp.Regexp = regexp.MustCompile(GitLabURLPattern)
 	return &Route{gitlabRegex, GitlabHandler{}}
-}
-
-// BitbucketHandler - Request handler for BitBucket
-type BitbucketHandler struct{}
-
-func (handler BitbucketHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(responseWriter, "Hello from BitBucket! %q", html.EscapeString(request.URL.Path))
 }
 
 // GetBitBucketHandler - Gets the route handler for BitBucket
