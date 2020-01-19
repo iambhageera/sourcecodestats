@@ -46,18 +46,12 @@ func (repo *Repository) ParseRequestURL(url string) (bool, *Error) {
 	return true, nil
 }
 
-// MakeURL - Generates the URL for the repository
-func (repo *Repository) MakeURL() (bool, *Error) {
-	log.Println("Generic method MakeURL; Not Implemented!")
-	return false, nil
-}
-
 // VerifyRepository - Verifies the repository details with the service
 func (repo *Repository) VerifyRepository() (bool, *Error) {
 
 	// Make sure URL is generated before using it
 	if len(repo.url) == 0 {
-		repo.MakeURL()
+		return false, &Error{"No URLs to work with!"}
 	}
 
 	// Search for the owner first
