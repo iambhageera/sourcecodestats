@@ -54,17 +54,17 @@ func (repo *Repository) VerifyRepository() (bool, *Error) {
 		return false, &Error{"No URLs to work with!"}
 	}
 
-	// Search for the owner first
-	response, err := http.Get(repo.ownerURL)
+	// Search for the repository
+	response, err := http.Get(repo.url)
 	if err != nil || response.StatusCode != 200 {
-		log.Printf("Error while fetching the owner %v details - %v\n", repo.ownerURL, err)
-		return false, &Error{"Owner not found!"}
-	}
 
-	// Owner found, search for the repository
-	response, err = http.Get(repo.url)
-	if err != nil || response.StatusCode != 200 {
-		return false, &Error{"No public repository found under user!"}
+		// Repository not found, search for the owner for precise error
+		response, err := http.Get(repo.ownerURL)
+		if err != nil || response.StatusCode != 200 {
+			return false, &Error{"Owner not found!"}
+		}
+
+		return false, &Error{"No such public repository found under user!"}
 	}
 
 	// repository details are completely valid
