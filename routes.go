@@ -66,13 +66,17 @@ func InitializeRouteHandleManager() *HTTPRouteHandleManager {
 }
 
 // GithubHandler - Request handler type for GitHub
-type GithubHandler struct {
-	ServerSideEventRegistrar
-}
+type GithubHandler struct{}
 
 func (handler GithubHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 
-	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
+	var registrar = ServerSideEventRegistrar{
+		messageCounter: 0,
+		request:        request,
+		connection:     responseWriter,
+	}
+
+	if ok, err := registrar.PrepareConnection(); !ok {
 		http.Error(responseWriter, err.message, http.StatusInternalServerError)
 		return
 	}
@@ -81,13 +85,17 @@ func (handler GithubHandler) ServeHTTP(responseWriter http.ResponseWriter, reque
 }
 
 // GitlabHandler - Request handler type for GitLab
-type GitlabHandler struct {
-	ServerSideEventRegistrar
-}
+type GitlabHandler struct{}
 
 func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 
-	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
+	var registrar = ServerSideEventRegistrar{
+		messageCounter: 0,
+		request:        request,
+		connection:     responseWriter,
+	}
+
+	if ok, err := registrar.PrepareConnection(); !ok {
 		http.Error(responseWriter, err.message, http.StatusInternalServerError)
 		return
 	}
@@ -96,13 +104,17 @@ func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, reque
 }
 
 // BitbucketHandler - Request handler for BitBucket
-type BitbucketHandler struct {
-	ServerSideEventRegistrar
-}
+type BitbucketHandler struct{}
 
 func (handler BitbucketHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 
-	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
+	var registrar = ServerSideEventRegistrar{
+		messageCounter: 0,
+		request:        request,
+		connection:     responseWriter,
+	}
+
+	if ok, err := registrar.PrepareConnection(); !ok {
 		http.Error(responseWriter, err.message, http.StatusInternalServerError)
 		return
 	}

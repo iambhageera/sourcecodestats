@@ -12,12 +12,8 @@ type ServerSideEventRegistrar struct {
 	connection     http.ResponseWriter
 }
 
-// InitializeRegistrar - Sets up the client connection to handle event streaming
-func (registrar *ServerSideEventRegistrar) InitializeRegistrar(responseWriter http.ResponseWriter, request *http.Request) (bool, *Error) {
-
-	// Store the request and response objects
-	registrar.request = request
-	registrar.connection = responseWriter
+// PrepareConnection - Sets up the client connection to handle event streaming
+func (registrar *ServerSideEventRegistrar) PrepareConnection() (bool, *Error) {
 
 	if registrar.connection != nil {
 
