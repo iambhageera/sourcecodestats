@@ -10,10 +10,10 @@ import (
 // GitLabURLPattern - Regex Pattern for GitLab request URLs
 var GitLabURLPattern = `^/gitlab/([^/]+)/([^/]+)/?$`
 
-// GitlabHandler - Request handler type for GitLab
-type GitlabHandler struct{}
+// GitlabRequestHandler - Request handler type for GitLab
+type GitlabRequestHandler struct{}
 
-func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+func (handler GitlabRequestHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 
 	var registrar = ServerSideEventRegistrar{
 		messageCounter: 0,
@@ -32,5 +32,5 @@ func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, reque
 // GetGitLabHandler - Gets the route handler type for GitLab
 func GetGitLabHandler() *Route {
 	var gitlabRegex *regexp.Regexp = regexp.MustCompile(GitLabURLPattern)
-	return &Route{gitlabRegex, GitlabHandler{}}
+	return &Route{gitlabRegex, GitlabRequestHandler{}}
 }
