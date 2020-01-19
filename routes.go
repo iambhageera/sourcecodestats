@@ -71,12 +71,13 @@ type GithubHandler struct {
 }
 
 func (handler GithubHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(responseWriter, "Hello from GitHub! %q", html.EscapeString(request.URL.Path))
 
 	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
 		http.Error(responseWriter, err.message, http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Fprintf(responseWriter, "Hello from GitHub! %q", html.EscapeString(request.URL.Path))
 }
 
 // GitlabHandler - Request handler type for GitLab
@@ -85,12 +86,13 @@ type GitlabHandler struct {
 }
 
 func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(responseWriter, "Hello from GitLab! %q", html.EscapeString(request.URL.Path))
 
 	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
 		http.Error(responseWriter, err.message, http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Fprintf(responseWriter, "Hello from GitLab! %q", html.EscapeString(request.URL.Path))
 }
 
 // BitbucketHandler - Request handler for BitBucket
@@ -99,12 +101,13 @@ type BitbucketHandler struct {
 }
 
 func (handler BitbucketHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
-	fmt.Fprintf(responseWriter, "Hello from BitBucket! %q", html.EscapeString(request.URL.Path))
 
 	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
 		http.Error(responseWriter, err.message, http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Fprintf(responseWriter, "Hello from BitBucket! %q", html.EscapeString(request.URL.Path))
 }
 
 // GetGitHubHandler - Gets the route handler for GitHub
