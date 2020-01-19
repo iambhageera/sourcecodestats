@@ -10,10 +10,10 @@ import (
 // GitHubURLPattern - Regex Pattern for GitHub request URLs
 var GitHubURLPattern = `^/github/([^/]+)/([^/]+)/?$`
 
-// GithubHandler - Request handler type for GitHub
-type GithubHandler struct{}
+// GithubRequestHandler - Request handler type for GitHub
+type GithubRequestHandler struct{}
 
-func (handler GithubHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
+func (handler GithubRequestHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 
 	var registrar = ServerSideEventRegistrar{
 		messageCounter: 0,
@@ -26,18 +26,44 @@ func (handler GithubHandler) ServeHTTP(responseWriter http.ResponseWriter, reque
 		return
 	}
 
-	var repo Repository = Repository{}
+	var repo GitHubRepository = GitHubRepository{}
 
-	if ok, _ := repo.ParseURL(request.URL.Path); !ok {
+	if ok, _ := repo.ParseRequestURL(request.URL.Path); !ok {
 		http.NotFound(responseWriter, request)
+		return
+	}
+
+	// Generate the repo URLs
+	repo.MakeURL()
+
+	if ok, err := repo.VerifyRepository(); !ok {
+		http.Error(responseWriter, err.message, http.StatusBadRequest)
 		return
 	}
 
 	fmt.Fprintf(responseWriter, "Hello from GitHub! %q", html.EscapeString(request.URL.Path))
 }
 
+// GitHubRepository -
+type GitHubRepository struct {
+	Repository
+}
+
+// MakeURL - Generates the URL for the repository
+func (repo *GitHubRepository) MakeURL() (bool, *Error) {
+
+	if len(repo.service) == 0 || len(repo.owner) == 0 || len(repo.name) == 0 {
+		return false, &Error{"Required repository information is missing!"}
+	}
+
+	repo.ownerURL = "https://github.com/" + repo.owner
+	repo.url = repo.ownerURL + "/" + repo.name
+
+	return true, nil
+}
+
 // GetGitHubHandler - Gets the route handler for GitHub
 func GetGitHubHandler() *Route {
 	var githubRegex *regexp.Regexp = regexp.MustCompile(GitHubURLPattern)
-	return &Route{githubRegex, GithubHandler{}}
+	return &Route{githubRegex, GithubRequestHandler{}}
 }

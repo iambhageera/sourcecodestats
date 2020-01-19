@@ -2,18 +2,21 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"strings"
 )
 
 // Repository - Stores the information about the repository
 type Repository struct {
-	name    string
-	service string
-	owner   string
+	name     string
+	service  string
+	owner    string
+	url      string
+	ownerURL string
 }
 
-// ParseURL - parses the request URL to get the repository information
-func (repo *Repository) ParseURL(url string) (bool, *Error) {
+// ParseRequestURL - parses the request URL to get the repository information
+func (repo *Repository) ParseRequestURL(url string) (bool, *Error) {
 
 	if len(url) == 0 {
 		return false, &Error{"URL cannot be empty!"}
@@ -40,5 +43,36 @@ func (repo *Repository) ParseURL(url string) (bool, *Error) {
 	repo.owner = tokens[1]
 	repo.name = tokens[2]
 
+	return true, nil
+}
+
+// MakeURL - Generates the URL for the repository
+func (repo *Repository) MakeURL() (bool, *Error) {
+	log.Println("Generic method MakeURL; Not Implemented!")
+	return false, nil
+}
+
+// VerifyRepository - Verifies the repository details with the service
+func (repo *Repository) VerifyRepository() (bool, *Error) {
+
+	// Make sure URL is generated before using it
+	if len(repo.url) == 0 {
+		repo.MakeURL()
+	}
+
+	// Search for the owner first
+	response, err := http.Get(repo.ownerURL)
+	if err != nil || response.StatusCode != 200 {
+		log.Printf("Error while fetching the owner %v details - %v\n", repo.ownerURL, err)
+		return false, &Error{"Owner not found!"}
+	}
+
+	// Owner found, search for the repository
+	response, err = http.Get(repo.url)
+	if err != nil || response.StatusCode != 200 {
+		return false, &Error{"No public repository found under user!"}
+	}
+
+	// repository details are completely valid
 	return true, nil
 }
