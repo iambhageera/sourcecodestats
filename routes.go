@@ -31,11 +31,6 @@ type HTTPRouteHandleManager struct {
 // UniversalHandler - A single request handler which will process all the requests for the application
 func (handleManager *HTTPRouteHandleManager) UniversalHandler(responseWriter http.ResponseWriter, request *http.Request) {
 
-	// Make sure that the writer supports flushing
-	if _, ok := responseWriter.(http.Flusher); !ok {
-		http.Error(responseWriter, "Streaming Unsupported!", http.StatusInternalServerError)
-	}
-
 	// Stores the final handler for the request
 	var handler http.Handler
 
@@ -49,12 +44,6 @@ func (handleManager *HTTPRouteHandleManager) UniversalHandler(responseWriter htt
 	if handler == nil {
 		http.NotFound(responseWriter, request)
 	}
-
-	// Set all the required HTTP headers for handling Server Side Events
-	responseWriter.Header().Set("Content-Type", "text/event-stream")
-	responseWriter.Header().Set("Cache-Control", "no-cache")
-	responseWriter.Header().Set("Connection", "keep-alive")
-	responseWriter.Header().Set("Access-Control-Allow-Origin", "*")
 
 	handler.ServeHTTP(responseWriter, request)
 }
@@ -77,24 +66,45 @@ func InitializeRouteHandleManager() *HTTPRouteHandleManager {
 }
 
 // GithubHandler - Request handler type for GitHub
-type GithubHandler struct{}
+type GithubHandler struct {
+	ServerSideEventRegistrar
+}
 
 func (handler GithubHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(responseWriter, "Hello from GitHub! %q", html.EscapeString(request.URL.Path))
+
+	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
+		http.Error(responseWriter, err.message, http.StatusInternalServerError)
+		return
+	}
 }
 
 // GitlabHandler - Request handler type for GitLab
-type GitlabHandler struct{}
+type GitlabHandler struct {
+	ServerSideEventRegistrar
+}
 
 func (handler GitlabHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(responseWriter, "Hello from GitLab! %q", html.EscapeString(request.URL.Path))
+
+	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
+		http.Error(responseWriter, err.message, http.StatusInternalServerError)
+		return
+	}
 }
 
 // BitbucketHandler - Request handler for BitBucket
-type BitbucketHandler struct{}
+type BitbucketHandler struct {
+	ServerSideEventRegistrar
+}
 
 func (handler BitbucketHandler) ServeHTTP(responseWriter http.ResponseWriter, request *http.Request) {
 	fmt.Fprintf(responseWriter, "Hello from BitBucket! %q", html.EscapeString(request.URL.Path))
+
+	if ok, err := handler.InitializeRegistrar(responseWriter, request); !ok {
+		http.Error(responseWriter, err.message, http.StatusInternalServerError)
+		return
+	}
 }
 
 // GetGitHubHandler - Gets the route handler for GitHub
